@@ -21,12 +21,10 @@ export class AppComponent{
 
   async login() {
     await this.authService.login();
-    const token = await this.authService.getToken();
-    console.log(token);
+    await this.authService.getToken();
   }
 
   getUsers() {
-    const users = this.authService.getUsers().subscribe((users) => console.log(users));
-    console.log(users);
+    this.authService.getUsers().subscribe((users) => console.log(users));
   }
 }
