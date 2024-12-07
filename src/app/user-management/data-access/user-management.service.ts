@@ -3,15 +3,14 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
 import { from, switchMap } from "rxjs";
+import { User } from "../interfaces/user";
 
 interface UserManagementState {
-  users: any;
+  users: User[];
   loading: boolean;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class UserManagementService {
   private readonly keycloakService = inject(KeycloakService);
   private readonly http = inject(HttpClient);
@@ -43,7 +42,7 @@ export class UserManagementService {
     }
 
   private getUsers(token: string) {
-    return this.http.get(`http://localhost:8069/admin/realms/myrealm/users`, {
+    return this.http.get<User[]>(`http://localhost:8069/admin/realms/myrealm/users`, {
       headers: new HttpHeaders({ Authorization: `Bearer ${token}` })
     });
   }
