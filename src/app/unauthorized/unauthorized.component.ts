@@ -3,7 +3,6 @@ import { AuthService } from '../shared/data-access/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-unauthorized',
   template: `
     <p>You are unauthorized to use this application. Please log in.</p>
   `,
