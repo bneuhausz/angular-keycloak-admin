@@ -3,3 +3,5 @@ export interface User {
   username: string;
   enabled: boolean;
 }
+
+export type CreateUser = Omit<User, 'id'>;
