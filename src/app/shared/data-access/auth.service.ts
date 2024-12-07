@@ -1,10 +1,9 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { KeycloakService } from "keycloak-angular";
 import { Subject } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-export interface AuthState {
+interface AuthState {
   currentUser: string | null;
 }
 
@@ -13,8 +12,6 @@ export interface AuthState {
 })
 export class AuthService {
   private readonly keycloakService = inject(KeycloakService);
-  private readonly http = inject(HttpClient);
-  headers?: HttpHeaders;
 
   //state
   readonly #state = signal<AuthState>({
@@ -54,21 +51,6 @@ export class AuthService {
 
   private logout() {
     this.keycloakService.logout('http://localhost:4200');
-  }
-
-  async getToken() {
-    const token = await this.keycloakService.getToken();
-    this.setHeaders(token);
-  }
-
-  getUsers() {
-    return this.http.get(`http://localhost:8069/admin/realms/myrealm/users`, { headers: this.headers });
-  }
-
-  private setHeaders(token: string) {
-    this.headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
   }
 
   private initializeAuthState() {
