@@ -9,49 +9,43 @@ import { User } from "../interfaces/user";
   selector: "app-user-table",
   imports: [MatTableModule, MatCardModule, MatProgressSpinnerModule, MatCheckboxModule],
   template: `
-    <main>
-      <mat-card>
-        @if (loading()) {
-          <section class="spinner-container">
-            <mat-progress-spinner mode="indeterminate" diameter="100"></mat-progress-spinner>
-          </section>
-        }
-        @else {
-          <table mat-table [dataSource]="users()">
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>ID</th>
-              <td mat-cell *matCellDef="let user">
-                {{ user.id }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="username">
-              <th mat-header-cell *matHeaderCellDef>Username</th>
-              <td mat-cell *matCellDef="let user">
-                {{ user.username }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="enabled">
-              <th mat-header-cell *matHeaderCellDef>Enabled</th>
-              <td mat-cell *matCellDef="let user">
-                <mat-checkbox [checked]="user.enabled" disabled>
+    <mat-card>
+      @if (loading()) {
+        <section class="spinner-container">
+          <mat-progress-spinner mode="indeterminate" diameter="100"></mat-progress-spinner>
+        </section>
+      }
+      @else {
+        <table mat-table [dataSource]="users()">
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>ID</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.id }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>Username</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.username }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="enabled">
+            <th mat-header-cell *matHeaderCellDef>Enabled</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-checkbox [checked]="user.enabled" disabled>
 
-                </mat-checkbox>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns" id="user-table-header"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        }
-      </mat-card>
-    </main>
+              </mat-checkbox>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns" id="user-table-header"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card>
   `,
   styles: [
     `
-      main {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
+      
 
       mat-card {
         width: 800px;
@@ -62,8 +56,6 @@ import { User } from "../interfaces/user";
       .spinner-container {
         display: flex;
         justify-content: center;
-        align-items: center;
-        height: 100%;
       }
 
       table {

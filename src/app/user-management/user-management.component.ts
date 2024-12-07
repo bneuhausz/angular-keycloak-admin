@@ -6,9 +6,20 @@ import { UserTableComponent } from './ui/user-table.component';
   imports: [UserTableComponent],
   providers: [UserManagementService],
   template: `
-    <p>User Management</p>
-    <app-user-table [users]="userManagementService.users()" [loading]="userManagementService.loading()" />
+    <main>
+      <h1>User Management</h1>
+      <app-user-table [users]="userManagementService.users()" [loading]="userManagementService.loading()" />
+    </main>
   `,
+  styles: [
+    `
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    `,
+  ],
 })
 export default class UserManagementComponent {
   userManagementService = inject(UserManagementService);
