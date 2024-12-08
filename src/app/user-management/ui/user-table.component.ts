@@ -31,7 +31,6 @@ import { User } from "../interfaces/user";
           <th mat-header-cell *matHeaderCellDef>Enabled</th>
           <td mat-cell *matCellDef="let user">
             <mat-checkbox [checked]="user.enabled" disabled>
-
             </mat-checkbox>
           </td>
         </ng-container>

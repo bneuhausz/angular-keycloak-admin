@@ -2,19 +2,18 @@ import { Component, inject } from '@angular/core';
 import { UserManagementService } from './data-access/user-management.service';
 import { UserTableComponent } from './ui/user-table.component';
 import { MatCardModule } from '@angular/material/card';
-import { CreateUserFormComponent } from "./ui/create-user-form.component";
+import { UserTableToolbarComponent } from './ui/user-table-toolbar.component';
+import { MatDialog } from '@angular/material/dialog';
+import { CreateUserDialogComponent } from './ui/create-user-dialog.component';
 
 @Component({
-  imports: [UserTableComponent, MatCardModule, CreateUserFormComponent],
+  imports: [UserTableComponent, MatCardModule, UserTableToolbarComponent],
   providers: [UserManagementService],
   template: `
     <main>
       <h1>User Management</h1>
       <mat-card>
-        <!-- TODO: put this on a modal -->
-        <app-create-user-form (userCreated)="userManagementService.userCreated$.next($event)" /> 
-      </mat-card>
-      <mat-card>
+        <app-user-table-toolbar (create)="openCreateDialog()" />
         <app-user-table [users]="userManagementService.users()" [loading]="userManagementService.loading()" />
       </mat-card>
     </main>
@@ -37,4 +36,14 @@ import { CreateUserFormComponent } from "./ui/create-user-form.component";
 })
 export default class UserManagementComponent {
   userManagementService = inject(UserManagementService);
+  private readonly dialog = inject(MatDialog);
+
+  openCreateDialog() {
+    const dialogRef = this.dialog.open(CreateUserDialogComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.userManagementService.userCreated$.next(result);
+      }      
+    });
+  }
 }
