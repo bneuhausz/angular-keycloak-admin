@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
 import { catchError, EMPTY, from, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { CreateUser, User } from "../interfaces/user";
+import { environment } from "../../../environments/environment.development";
 
 interface UserManagementState {
   users: User[];
@@ -81,16 +82,14 @@ export class UserManagementService {
     }
 
   private getUsers(token: string) {
-    //TODO: create environments and env variables
-    return this.http.get<User[]>(`http://localhost:8069/admin/realms/myrealm/users`, {
+    return this.http.get<User[]>(`${environment.keycloakConfig.userManagementBaseUrl}`, {
       headers: new HttpHeaders({ Authorization: `Bearer ${token}` })
     });
   }
 
   private createUser(token: string, user: CreateUser) {
     return this.http.post(
-      //TODO: create environments and env variables
-      `http://localhost:8069/admin/realms/myrealm/users`,
+      `${environment.keycloakConfig.userManagementBaseUrl}`,
       user,
       { headers: new HttpHeaders({ Authorization: `Bearer ${token}` })}
     );
