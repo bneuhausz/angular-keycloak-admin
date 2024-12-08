@@ -39,7 +39,6 @@ export class UserManagementService {
     constructor() {
       this.loadUsers$
         .subscribe((users) => {
-          console.log(users);
           this.#state.update((state) => ({
             ...state,
             users,
