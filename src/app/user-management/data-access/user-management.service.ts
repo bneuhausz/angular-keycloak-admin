@@ -73,7 +73,6 @@ export class UserManagementService {
           )
         )
         .subscribe((users) => {
-          // TODO: actually implement user creation in KC
           this.#state.update((state) => ({
             ...state,
             users: [...users],
