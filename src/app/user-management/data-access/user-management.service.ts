@@ -2,12 +2,14 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
-import { from, Subject, switchMap } from "rxjs";
+import { catchError, EMPTY, from, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { CreateUser, User } from "../interfaces/user";
 
 interface UserManagementState {
   users: User[];
   loading: boolean;
+  error: string | null;
+  
 }
 
 @Injectable()
@@ -18,6 +20,7 @@ export class UserManagementService {
   readonly #state = signal<UserManagementState>({
     users: [],
     loading: true,
+    error: null,
   });
 
   users = computed(() => this.#state().users);
@@ -36,6 +39,7 @@ export class UserManagementService {
     constructor() {
       this.loadUsers$
         .subscribe((users) => {
+          console.log(users);
           this.#state.update((state) => ({
             ...state,
             users,
@@ -46,12 +50,34 @@ export class UserManagementService {
       this.userCreated$
         .pipe(
           takeUntilDestroyed(),
+          tap(() => {
+            this.#state.update((state) => ({
+              ...state,
+              loading: true,
+            }));
+          }),
+          switchMap((user) =>
+            from(this.keycloakService.getToken()).pipe(
+              withLatestFrom([user]),
+              switchMap(([token, user]) => this.createUser(token, user)),
+              switchMap(() => this.loadUsers$),
+              catchError((error) => {
+                this.#state.update((state) => ({
+                  ...state,
+                  error: error.message,
+                  loading: false,
+                }));
+                return EMPTY;
+              })
+            )
+          )
         )
-        .subscribe((user) => {
+        .subscribe((users) => {
           // TODO: actually implement user creation in KC
           this.#state.update((state) => ({
             ...state,
-            users: [...state.users, { ...user, id: Math.random().toString() }],
+            users: [...users],
+            loading: false,
           }));
         });
     }
@@ -61,5 +87,14 @@ export class UserManagementService {
     return this.http.get<User[]>(`http://localhost:8069/admin/realms/myrealm/users`, {
       headers: new HttpHeaders({ Authorization: `Bearer ${token}` })
     });
+  }
+
+  private createUser(token: string, user: CreateUser) {
+    return this.http.post(
+      //TODO: create environments and env variables
+      `http://localhost:8069/admin/realms/myrealm/users`,
+      user,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${token}` })}
+    );
   }
 }
