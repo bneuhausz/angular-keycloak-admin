@@ -26,6 +26,8 @@ export class UserManagementService {
 
   users = computed(() => this.#state().users);
   loading = computed(() => this.#state().loading);
+  //TODO: snackbar for errors
+  error = computed(() => this.#state().error);
 
   loadUsers$ = from(this.keycloakService.getToken())
     .pipe(
