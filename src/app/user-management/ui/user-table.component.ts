@@ -54,6 +54,14 @@ import { User } from "../interfaces/user";
         background-color: var(--mat-sys-primary);
         color: var(--mat-sys-on-primary);
       }
+
+      .mat-column-id {
+        width: 350px;
+      }
+
+      .mat-column-enabled {
+        width: 100px;
+      }
     `,
   ],
 })
