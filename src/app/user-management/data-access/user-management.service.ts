@@ -37,7 +37,32 @@ export class UserManagementService {
       ),
     );
 
-    userCreated$ = new Subject<CreateUser>();
+    createUser$ = new Subject<CreateUser>();
+    private readonly userCreated$ = this.createUser$
+      .pipe(
+        takeUntilDestroyed(),
+        tap(() => {
+          this.#state.update((state) => ({
+            ...state,
+            loading: true,
+          }));
+        }),
+        switchMap((user) =>
+          from(this.keycloakService.getToken()).pipe(
+            withLatestFrom([user]),
+            switchMap(([token, user]) => this.createUser(token, user)),
+            switchMap(() => this.loadUsers$),
+            catchError((error) => {
+              this.#state.update((state) => ({
+                ...state,
+                error: error.message,
+                loading: false,
+              }));
+              return EMPTY;
+            })
+          )
+        )
+      );
 
     constructor() {
       this.loadUsers$
@@ -50,30 +75,6 @@ export class UserManagementService {
         });
 
       this.userCreated$
-        .pipe(
-          takeUntilDestroyed(),
-          tap(() => {
-            this.#state.update((state) => ({
-              ...state,
-              loading: true,
-            }));
-          }),
-          switchMap((user) =>
-            from(this.keycloakService.getToken()).pipe(
-              withLatestFrom([user]),
-              switchMap(([token, user]) => this.createUser(token, user)),
-              switchMap(() => this.loadUsers$),
-              catchError((error) => {
-                this.#state.update((state) => ({
-                  ...state,
-                  error: error.message,
-                  loading: false,
-                }));
-                return EMPTY;
-              })
-            )
-          )
-        )
         .subscribe((users) => {
           this.#state.update((state) => ({
             ...state,

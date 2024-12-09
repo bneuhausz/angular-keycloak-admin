@@ -42,7 +42,7 @@ export default class UserManagementComponent {
     const dialogRef = this.dialog.open(CreateUserDialogComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.userManagementService.userCreated$.next(result);
+        this.userManagementService.createUser$.next(result);
       }      
     });
   }
