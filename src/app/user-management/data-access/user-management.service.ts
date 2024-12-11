@@ -35,6 +35,13 @@ export class UserManagementService {
       switchMap((token) =>
         this.getUsers(token)
       ),
+      tap((users) => {
+        this.#state.update((state) => ({
+          ...state,
+          users,
+          loading: false,
+        }));
+      }),
     );
 
     createUser$ = new Subject<CreateUser>();
@@ -64,24 +71,39 @@ export class UserManagementService {
         )
       );
 
-    constructor() {
-      this.loadUsers$
-        .subscribe((users) => {
+    deleteUser$ = new Subject<string>();
+    private readonly userDeleted$ = this.deleteUser$
+      .pipe(
+        takeUntilDestroyed(),
+        tap(() => {
           this.#state.update((state) => ({
             ...state,
-            users,
-            loading: false,
+            loading: true,
           }));
-        });
+        }),
+        switchMap((userId) =>
+          from(this.keycloakService.getToken()).pipe(
+            withLatestFrom([userId]),
+            switchMap(([token, userId]) => this.deleteUser(token, userId)),
+            switchMap(() => this.loadUsers$),
+            catchError((error) => {
+              this.#state.update((state) => ({
+                ...state,
+                error: error.message,
+                loading: false,
+              }));
+              return EMPTY;
+            })
+          )
+        )
+      );
 
-      this.userCreated$
-        .subscribe((users) => {
-          this.#state.update((state) => ({
-            ...state,
-            users: [...users],
-            loading: false,
-          }));
-        });
+    constructor() {
+      this.loadUsers$.subscribe();
+
+      this.userCreated$.subscribe();
+
+      this.userDeleted$.subscribe();
     }
 
   private getUsers(token: string) {
@@ -94,6 +116,13 @@ export class UserManagementService {
     return this.http.post(
       `${environment.keycloakConfig.userManagementBaseUrl}`,
       user,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${token}` })}
+    );
+  }
+
+  private deleteUser(token: string, userId: string) {
+    return this.http.delete(
+      `${environment.keycloakConfig.userManagementBaseUrl}/${userId}`,
       { headers: new HttpHeaders({ Authorization: `Bearer ${token}` })}
     );
   }
