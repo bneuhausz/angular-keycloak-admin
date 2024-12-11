@@ -5,10 +5,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { User } from "../interfaces/user";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
+import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfaces/pagination";
 
 @Component({
   selector: "app-user-table",
-  imports: [MatTableModule, MatProgressSpinnerModule, MatCheckboxModule, MatButtonModule, MatIconModule],
+  imports: [MatTableModule, MatProgressSpinnerModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatPaginatorModule],
   template: `
     @if (loading()) {
       <section class="spinner-container">
@@ -47,6 +49,9 @@ import { MatIconModule } from "@angular/material/icon";
         <tr mat-header-row *matHeaderRowDef="displayedColumns" id="user-table-header"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+      <mat-paginator [pageSize]="pagination().pageSize" [pageSizeOptions]="[3, 5, 10]"
+        [length]="pagination().total" [pageIndex]="pagination().pageIndex" (page)="pageEvent($event)">
+      </mat-paginator>
     }
   `,
   styles: [
@@ -87,7 +92,16 @@ import { MatIconModule } from "@angular/material/icon";
 export class UserTableComponent {
   users = input.required<User[]>();
   loading = input.required<boolean>();
+  pagination = input.required<Pagination>();
   delete = output<string>();
+  pageChange = output<PartialPaginationWithoutTotal>();
 
   displayedColumns = ['id', 'username', 'enabled', 'actions'];
+
+  pageEvent(event: PageEvent) {
+    this.pageChange.emit({
+      pageIndex: event.pageIndex,
+      pageSize: event.pageSize,
+    });
+  }
 }

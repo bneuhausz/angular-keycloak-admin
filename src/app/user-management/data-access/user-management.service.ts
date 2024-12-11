@@ -2,10 +2,10 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
-import { catchError, combineLatest, EMPTY, from, startWith, Subject, switchMap, tap, withLatestFrom } from "rxjs";
+import { catchError, combineLatest, EMPTY, from, startWith, Subject, switchMap, tap } from "rxjs";
 import { CreateUser, User } from "../interfaces/user";
 import { environment } from "../../../environments/environment.development";
-import { Pagination } from "../../shared/interfaces/pagination";
+import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfaces/pagination";
 
 interface UserManagementState {
   users: User[];
@@ -25,7 +25,7 @@ export class UserManagementService {
     error: null,
     pagination: {
       total: 0,
-      page: 1,
+      pageIndex: 0,
       pageSize: 5,
     }
   });
@@ -44,16 +44,41 @@ export class UserManagementService {
       ),
     );
 
-  loadUsers$ = from(this.keycloakService.getToken())
+  pagination$ = new Subject<PartialPaginationWithoutTotal>();
+  private readonly paginated$ = this.pagination$
+    .pipe(
+      takeUntilDestroyed(),
+      startWith(this.pagination()),
+      tap((pagination) => {
+        this.#state.update((state) => ({
+          ...state,
+          pagination: {
+            total: state.pagination.total,
+            pageIndex: pagination.pageIndex,
+            pageSize: pagination.pageSize
+          }
+        }));
+      }),
+      switchMap(() => this.loadUsers$),
+    );
+
+  private readonly loadUsers$ = from(this.keycloakService.getToken())
     .pipe(
       takeUntilDestroyed(),
       switchMap((token) =>
-        this.getUsers(token)
+        combineLatest([
+          this.getUsers(token),
+          this.userCount(token)
+        ])
       ),
-      tap((users) => {
+      tap(([users, total]) => {
         this.#state.update((state) => ({
           ...state,
           users,
+          pagination: {
+            ...state.pagination,
+            total,
+          },
           loading: false,
         }));
       }),
@@ -71,8 +96,7 @@ export class UserManagementService {
         }),
         switchMap((user) =>
           from(this.keycloakService.getToken()).pipe(
-            withLatestFrom([user]),
-            switchMap(([token, user]) => this.createUser(token, user)),
+            switchMap((token) => this.createUser(token, user)),
             switchMap(() => this.loadUsers$),
             catchError((error) => {
               this.#state.update((state) => ({
@@ -98,8 +122,7 @@ export class UserManagementService {
         }),
         switchMap((userId) =>
           from(this.keycloakService.getToken()).pipe(
-            withLatestFrom([userId]),
-            switchMap(([token, userId]) => this.deleteUser(token, userId)),
+            switchMap((token) => this.deleteUser(token, userId)),
             switchMap(() => this.loadUsers$),
             catchError((error) => {
               this.#state.update((state) => ({
@@ -114,17 +137,7 @@ export class UserManagementService {
       );
 
     constructor() {
-      this.userCount$.subscribe((total) => {
-        this.#state.update((state) => ({
-          ...state,
-          pagination: {
-            ...state.pagination,
-            total,
-          },
-        }));
-      });
-
-      this.loadUsers$.subscribe();
+      this.paginated$.subscribe();
 
       this.userCreated$.subscribe();
 
@@ -132,8 +145,8 @@ export class UserManagementService {
     }
 
   private getUsers(token: string) {
-    const first = (this.pagination().page - 1) * this.pagination().pageSize;
-    const max = this.pagination().page * this.pagination().pageSize;
+    const first = (this.pagination().pageIndex) * this.pagination().pageSize;
+    const max = (this.pagination().pageIndex + 1) * this.pagination().pageSize;
     return this.http.get<User[]>(`${environment.keycloakConfig.userManagementBaseUrl}?first=${first}&max=${max}`, {
       headers: new HttpHeaders({ Authorization: `Bearer ${token}` })
     });

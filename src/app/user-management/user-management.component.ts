@@ -15,7 +15,13 @@ import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
       <h1>User Management</h1>
       <mat-card>
         <app-user-table-toolbar (create)="openCreateDialog()" />
-        <app-user-table [users]="userManagementService.users()" [loading]="userManagementService.loading()" (delete)="deleteUser($event)" />
+        <app-user-table
+          [users]="userManagementService.users()"
+          [loading]="userManagementService.loading()"
+          [pagination]="userManagementService.pagination()"
+          (pageChange)="userManagementService.pagination$.next($event)"
+          (delete)="deleteUser($event)"
+        />
       </mat-card>
     </main>
   `,
@@ -51,7 +57,6 @@ export default class UserManagementComponent {
   deleteUser(id: string) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent);
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
       if (result) {
         this.userManagementService.deleteUser$.next(id);
       }      

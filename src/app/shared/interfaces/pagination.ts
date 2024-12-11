@@ -1,5 +1,7 @@
 export interface Pagination {
   total: number;
-  page: number;
+  pageIndex: number;
   pageSize: number;
 }
+
+export type PartialPaginationWithoutTotal = Omit<Pagination, 'total'> & Partial<Pick<Pagination, 'total'>>;
