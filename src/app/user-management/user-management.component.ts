@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.component';
 import { UserRoleManagementService } from './data-access/user-role-management.service';
 import { ManageUserGroupsDialogComponent } from './ui/manage-user-groups-dialog.component';
+import { EditUserRole } from '../shared/interfaces/role';
 
 @Component({
   imports: [UserTableComponent, MatCardModule, UserTableToolbarComponent],
@@ -66,14 +67,23 @@ export default class UserManagementComponent {
   }
 
   openManageGroupsDialog(id: string) {
+    this.userRoleManagementService.userSelected$.next(id);
     const user = this.userManagementService.users().find(user => user.id === id);
     const dialogRef = this.dialog.open(ManageUserGroupsDialogComponent, {
-      data: { user, realmRoles: this.userRoleManagementService.realmRoles() },
+      data: {
+        user,
+        realmRoles: this.userRoleManagementService.realmRoles(),
+        userRoles: this.userRoleManagementService.userRoles
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log(result);
-      }      
+
+    dialogRef.componentInstance.roleToggled.subscribe((event: EditUserRole) => {
+      if (event.checked) {
+        this.userRoleManagementService.addUserRole$.next(event);
+      }
+      else {
+        this.userRoleManagementService.deleteUserRole$.next(event);
+      }
     });
   }
 
