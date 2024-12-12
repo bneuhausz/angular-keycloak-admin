@@ -1,6 +1,7 @@
 export interface Role {
   id: string;
   name: string;
+  composite: boolean;
 }
 
 export interface EditUserRole {

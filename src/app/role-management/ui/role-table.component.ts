@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, output } from "@angular/core";
 import { Role } from "../../shared/interfaces/role";
 import { MatTableModule } from "@angular/material/table";
 import { MatButtonModule } from "@angular/material/button";
@@ -36,6 +36,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
               mat-mini-fab class="delete-button"
               matTooltip="Delete role"
               matTooltipPosition="above"
+              (click)="deleteRole.emit(role.name)"
             >
               <mat-icon>delete</mat-icon>
             </button>
@@ -77,6 +78,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 export class RoleTableComponent {
   roles = input.required<Role[]>();
   loading = input.required<boolean>();
+  deleteRole = output<string>();
 
   displayedColumns = ['id', 'name', 'actions'];
 }

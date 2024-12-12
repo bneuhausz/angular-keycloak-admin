@@ -30,7 +30,7 @@ import { EditUserRole } from '../shared/interfaces/role';
           (pageChange)="userManagementService.pagination$.next($event)"
           (manageRoles)="openManageRolesDialog($event)"
           (resetPassword)="openResetPasswordDialog($event)"
-          (deleteUser)="openDeleteUserDialong($event)"
+          (deleteUser)="openDeleteUserDialog($event)"
         />
       </mat-card>
     </main>
@@ -99,7 +99,7 @@ export default class UserManagementComponent {
     });
   }
 
-  openDeleteUserDialong(id: string) {
+  openDeleteUserDialog(id: string) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

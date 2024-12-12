@@ -4,6 +4,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { EditUserRole, Role } from "../../shared/interfaces/role";
 
+//TODO: improve the design
 @Component({
   host: { 'data-dialog': 'manage-user-roles' },
   imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatButtonModule, MatCheckboxModule],
@@ -23,8 +24,11 @@ import { EditUserRole, Role } from "../../shared/interfaces/role";
   styles: [
     `
       mat-dialog-content {
-        height: 100px;
+        height: 300px;
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
     `
   ]
