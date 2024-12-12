@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { isAuthenticatedGuard } from './shared/guards/auth.guard';
+import { canManageUsersGuard } from './shared/guards/can-manage-users.guard';
 
 export const routes: Routes = [
   {
@@ -12,7 +13,7 @@ export const routes: Routes = [
   },
   {
     path: 'user-management',
-    canActivate: [isAuthenticatedGuard()],
+    canActivate: [isAuthenticatedGuard(), canManageUsersGuard()],
     loadComponent: () => import('./user-management/user-management.component'),
   },
   {

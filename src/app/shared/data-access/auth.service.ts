@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 interface AuthState {
   currentUser: string | null;
+  canManageUsers: boolean;
 }
 
 @Injectable({
@@ -16,10 +17,12 @@ export class AuthService {
   //state
   readonly #state = signal<AuthState>({
     currentUser: null,
+    canManageUsers: false,
   });
 
   //selectors
   currentUser = computed(() => this.#state().currentUser);
+  canManageUsers = computed(() => this.#state().canManageUsers);
 
   //sources
   logout$ = new Subject<void>();
@@ -58,6 +61,7 @@ export class AuthService {
       this.#state.update((state) => ({
         ...state,
         currentUser: this.keycloakService.getUsername(),
+        canManageUsers: this.keycloakService.isUserInRole('user-manager'),
       }));
     }
   }

@@ -17,7 +17,7 @@ import { AuthService } from "../data-access/auth.service";
             <span>Home</span>
           </a>
 
-          @if (authService.currentUser()) {
+          @if (authService.currentUser() && authService.canManageUsers()) {
             <a mat-list-item routerLink="user-management">
               <mat-icon matListItemIcon>person_add</mat-icon>
               <span>User Management</span>

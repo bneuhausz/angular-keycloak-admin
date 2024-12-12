@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  host: { 'route': 'home' },
   template: `
     <p>Home</p>
   `,
