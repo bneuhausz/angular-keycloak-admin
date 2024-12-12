@@ -32,7 +32,6 @@ export class UserManagementService {
 
   users = computed(() => this.#state().users);
   loading = computed(() => this.#state().loading);
-  //TODO: snackbar for errors
   error = computed(() => this.#state().error);
   pagination = computed(() => this.#state().pagination);
 
@@ -82,6 +81,14 @@ export class UserManagementService {
           loading: false,
         }));
       }),
+      catchError((error) => {
+        this.#state.update((state) => ({
+          ...state,
+          error: error.message,
+          loading: false,
+        }));
+        return EMPTY;
+      }),
     );
 
     createUser$ = new Subject<CreateUser>();
@@ -98,16 +105,16 @@ export class UserManagementService {
           from(this.keycloakService.getToken()).pipe(
             switchMap((token) => this.createUser(token, user)),
             switchMap(() => this.loadUsers$),
-            catchError((error) => {
-              this.#state.update((state) => ({
-                ...state,
-                error: error.message,
-                loading: false,
-              }));
-              return EMPTY;
-            })
           )
-        )
+        ),
+        catchError((error) => {
+          this.#state.update((state) => ({
+            ...state,
+            error: error.message,
+            loading: false,
+          }));
+          return EMPTY;
+        }),
       );
 
     deleteUser$ = new Subject<string>();
@@ -124,16 +131,16 @@ export class UserManagementService {
           from(this.keycloakService.getToken()).pipe(
             switchMap((token) => this.deleteUser(token, userId)),
             switchMap(() => this.loadUsers$),
-            catchError((error) => {
-              this.#state.update((state) => ({
-                ...state,
-                error: error.message,
-                loading: false,
-              }));
-              return EMPTY;
-            })
           )
-        )
+        ),
+        catchError((error) => {
+          this.#state.update((state) => ({
+            ...state,
+            error: error.message,
+            loading: false,
+          }));
+          return EMPTY;
+        }),
       );
 
     constructor() {
