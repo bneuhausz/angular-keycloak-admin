@@ -1,0 +1,1 @@
+export const DEFAULT_ROLES = ['default-roles', 'offline_access', 'uma_authorization', 'default-roles-master'];

@@ -8,10 +8,12 @@ import { CreateUserDialogComponent } from './ui/create-user-dialog.component';
 import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.component';
+import { UserRoleManagementService } from './data-access/user-role-management.service';
+import { ManageUserGroupsDialogComponent } from './ui/manage-user-groups-dialog.component';
 
 @Component({
   imports: [UserTableComponent, MatCardModule, UserTableToolbarComponent],
-  providers: [UserManagementService],
+  providers: [UserManagementService, UserRoleManagementService],
   template: `
     <main>
       <h1>User Management</h1>
@@ -25,8 +27,9 @@ import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.compone
           [loading]="userManagementService.loading()"
           [pagination]="userManagementService.pagination()"
           (pageChange)="userManagementService.pagination$.next($event)"
+          (manageGroups)="openManageGroupsDialog($event)"
           (resetPassword)="openResetPasswordDialog($event)"
-          (deleteUser)="deleteUser($event)"
+          (deleteUser)="openDeleteUserDialong($event)"
         />
       </mat-card>
     </main>
@@ -49,6 +52,7 @@ import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.compone
 })
 export default class UserManagementComponent {
   userManagementService = inject(UserManagementService);
+  userRoleManagementService = inject(UserRoleManagementService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -61,23 +65,31 @@ export default class UserManagementComponent {
     });
   }
 
-  openResetPasswordDialog(id: string) {
+  openManageGroupsDialog(id: string) {
     const user = this.userManagementService.users().find(user => user.id === id);
-
-    if (user) {
-      const dialogRef = this.dialog.open(ResetPasswordDialogComponent, {
-        data: user,
-      });
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.userManagementService.resetPassword$.next({ id, data: { value: result.password } });
-        }      
-      });
-    }
-    
+    const dialogRef = this.dialog.open(ManageUserGroupsDialogComponent, {
+      data: { user, realmRoles: this.userRoleManagementService.realmRoles() },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+      }      
+    });
   }
 
-  deleteUser(id: string) {
+  openResetPasswordDialog(id: string) {
+    const user = this.userManagementService.users().find(user => user.id === id);
+    const dialogRef = this.dialog.open(ResetPasswordDialogComponent, {
+      data: user,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.userManagementService.resetPassword$.next({ id, data: { value: result.password } });
+      }      
+    });
+  }
+
+  openDeleteUserDialong(id: string) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
