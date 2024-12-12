@@ -22,6 +22,10 @@ import { AuthService } from "../data-access/auth.service";
               <mat-icon matListItemIcon>person_add</mat-icon>
               <span>User Management</span>
             </a>
+            <a mat-list-item routerLink="role-management">
+              <mat-icon matListItemIcon>groups</mat-icon>
+              <span>Role Management</span>
+            </a>
           }
         </mat-nav-list>
       </mat-sidenav>

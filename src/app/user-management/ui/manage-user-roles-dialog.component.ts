@@ -5,10 +5,10 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { EditUserRole, Role } from "../../shared/interfaces/role";
 
 @Component({
-  host: { 'data-dialog': 'manage-user-groups' },
+  host: { 'data-dialog': 'manage-user-roles' },
   imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatButtonModule, MatCheckboxModule],
   template: `
-    <h2 mat-dialog-title align="center">Manage User Groups</h2>
+    <h2 mat-dialog-title align="center">Manage User Roles</h2>
     <mat-dialog-content align="center">
       @for (role of data.realmRoles; track role.id) {
         <mat-checkbox [checked]="isUserInRole(role.id)" (change)="this.roleToggled.emit({ userId: this.data.user.id, roleId: role.id, roleName: role.name, checked: $event.checked })">
@@ -29,7 +29,7 @@ import { EditUserRole, Role } from "../../shared/interfaces/role";
     `
   ]
 })
-export class ManageUserGroupsDialogComponent {
+export class ManageUserRolesDialogComponent {
   data = inject(MAT_DIALOG_DATA);
   roleToggled = output<EditUserRole>();
 

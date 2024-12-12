@@ -17,6 +17,11 @@ export const routes: Routes = [
     loadComponent: () => import('./user-management/user-management.component'),
   },
   {
+    path: 'role-management',
+    canActivate: [isAuthenticatedGuard(), canManageUsersGuard()],
+    loadComponent: () => import('./role-management/role-management.component'),
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',

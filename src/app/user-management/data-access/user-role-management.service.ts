@@ -1,11 +1,11 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { KeycloakService } from "keycloak-angular";
-import { DEFAULT_ROLES } from "../constants/default-roles";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { environment } from "../../../environments/environment.development";
 import { catchError, EMPTY, from, map, Subject, switchMap, tap } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { EditUserRole, Role } from "../../shared/interfaces/role";
+import { DEFAULT_ROLES, RealmRoleUtils } from "../../shared/utils/realm-role-utils";
 
 interface RoleManagementState {
   realmRoles: Role[];
@@ -18,6 +18,7 @@ interface RoleManagementState {
 export class UserRoleManagementService {
   private readonly keycloakService = inject(KeycloakService);
   private readonly http = inject(HttpClient);
+  private readonly realmRoleUtils = inject(RealmRoleUtils);
 
   readonly #state = signal<RoleManagementState>({
     realmRoles: [],
@@ -29,11 +30,8 @@ export class UserRoleManagementService {
   realmRoles = computed(() => this.#state().realmRoles);
   userRoles = computed(() => this.#state().userRoles);
 
-  private readonly loadRealmRoles$ = from(this.keycloakService.getToken())
+  private readonly loadRealmRoles$ = this.realmRoleUtils.loadRealmRoles$
     .pipe(
-      takeUntilDestroyed(),
-      switchMap(token => this.getRealmRoles(token)),
-      map(roles => roles.filter(role => !DEFAULT_ROLES.some(defaultRole => role.name.toLowerCase().includes(defaultRole.toLowerCase())))),
       catchError((error) => {
         this.#state.update(state => ({
           ...state,
@@ -131,13 +129,6 @@ export class UserRoleManagementService {
     this.userRoleDeleted$.subscribe(() => {
       this.#state.update(state => ({ ...state, loading: false }));
     });
-  }
-
-  private getRealmRoles(token: string) {
-    return this.http.get<Role[]>(
-      `${environment.keycloakConfig.roleManagementBaseUrl}`,
-      { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
-    );
   }
 
   private getUserRoles(token: string, userId: string) {

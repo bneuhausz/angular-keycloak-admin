@@ -9,7 +9,7 @@ import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.component';
 import { UserRoleManagementService } from './data-access/user-role-management.service';
-import { ManageUserGroupsDialogComponent } from './ui/manage-user-groups-dialog.component';
+import { ManageUserRolesDialogComponent } from './ui/manage-user-roles-dialog.component';
 import { EditUserRole } from '../shared/interfaces/role';
 
 @Component({
@@ -28,7 +28,7 @@ import { EditUserRole } from '../shared/interfaces/role';
           [loading]="userManagementService.loading()"
           [pagination]="userManagementService.pagination()"
           (pageChange)="userManagementService.pagination$.next($event)"
-          (manageGroups)="openManageGroupsDialog($event)"
+          (manageRoles)="openManageRolesDialog($event)"
           (resetPassword)="openResetPasswordDialog($event)"
           (deleteUser)="openDeleteUserDialong($event)"
         />
@@ -66,10 +66,10 @@ export default class UserManagementComponent {
     });
   }
 
-  openManageGroupsDialog(id: string) {
+  openManageRolesDialog(id: string) {
     this.userRoleManagementService.userSelected$.next(id);
     const user = this.userManagementService.users().find(user => user.id === id);
-    const dialogRef = this.dialog.open(ManageUserGroupsDialogComponent, {
+    const dialogRef = this.dialog.open(ManageUserRolesDialogComponent, {
       data: {
         user,
         realmRoles: this.userRoleManagementService.realmRoles(),
