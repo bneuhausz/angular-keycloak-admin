@@ -15,7 +15,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     <main>
       <h1>User Management</h1>
       <mat-card>
-        <app-user-table-toolbar (create)="openCreateDialog()" />
+        <app-user-table-toolbar
+          [filterControl]="userManagementService.filterControl"
+          (create)="openCreateDialog()"
+        />
         <app-user-table
           [users]="userManagementService.users()"
           [loading]="userManagementService.loading()"

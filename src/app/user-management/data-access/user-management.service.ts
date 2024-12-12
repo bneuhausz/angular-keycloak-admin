@@ -2,15 +2,17 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
-import { catchError, combineLatest, EMPTY, from, startWith, Subject, switchMap, tap } from "rxjs";
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, EMPTY, from, startWith, Subject, switchMap, tap } from "rxjs";
 import { CreateUser, User } from "../interfaces/user";
 import { environment } from "../../../environments/environment.development";
 import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfaces/pagination";
+import { FormControl } from "@angular/forms";
 
 interface UserManagementState {
   users: User[];
   loading: boolean;
   error: string | null;
+  filter: string;
   pagination: Pagination;
 }
 
@@ -18,11 +20,13 @@ interface UserManagementState {
 export class UserManagementService {
   private readonly keycloakService = inject(KeycloakService);
   private readonly http = inject(HttpClient);
+  filterControl = new FormControl();
 
   readonly #state = signal<UserManagementState>({
     users: [],
     loading: true,
     error: null,
+    filter: '',
     pagination: {
       total: 0,
       pageIndex: 0,
@@ -34,6 +38,24 @@ export class UserManagementService {
   loading = computed(() => this.#state().loading);
   error = computed(() => this.#state().error);
   pagination = computed(() => this.#state().pagination);
+
+  private readonly filterChanged$ = this.filterControl.valueChanges
+    .pipe(
+      takeUntilDestroyed(),
+      debounceTime(300),
+      distinctUntilChanged(),
+      tap((filter) => {
+        this.#state.update((state) => ({
+          ...state,
+          filter,
+          pagination: {
+            ...state.pagination,
+            pageIndex: 0,
+          },
+        }));
+      }),
+      switchMap(() => this.loadUsers$)
+    );
 
   private readonly userCount$ = from(this.keycloakService.getToken())
     .pipe(
@@ -146,6 +168,8 @@ export class UserManagementService {
     constructor() {
       this.paginated$.subscribe();
 
+      this.filterChanged$.subscribe();
+
       this.userCreated$.subscribe();
 
       this.userDeleted$.subscribe();
@@ -154,7 +178,8 @@ export class UserManagementService {
   private getUsers(token: string) {
     const first = (this.pagination().pageIndex) * this.pagination().pageSize;
     const max = (this.pagination().pageIndex + 1) * this.pagination().pageSize;
-    return this.http.get<User[]>(`${environment.keycloakConfig.userManagementBaseUrl}?first=${first}&max=${max}`, {
+    const filter = this.#state().filter;
+    return this.http.get<User[]>(`${environment.keycloakConfig.userManagementBaseUrl}?first=${first}&max=${max}&username=${filter}`, {
       headers: new HttpHeaders({ Authorization: `Bearer ${token}` })
     });
   }
@@ -175,8 +200,9 @@ export class UserManagementService {
   }
 
   private userCount(token: string) {
+    const filter = this.#state().filter;
     return this.http.get<number>(
-      `${environment.keycloakConfig.userManagementBaseUrl}/count`,
+      `${environment.keycloakConfig.userManagementBaseUrl}/count?username=${filter}`,
       { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
     );
   }
