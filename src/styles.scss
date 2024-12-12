@@ -8,3 +8,9 @@ body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+.error-snackbar {
+  --mdc-snackbar-container-color: var(--mat-sys-error);
+  --mat-snack-bar-button-color: var(--mat-sys-on-error);
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-on-error);
+}
