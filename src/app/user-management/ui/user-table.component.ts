@@ -7,10 +7,11 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
 import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfaces/pagination";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: "app-user-table",
-  imports: [MatTableModule, MatProgressSpinnerModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatPaginatorModule],
+  imports: [MatTableModule, MatProgressSpinnerModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatPaginatorModule, MatTooltipModule],
   template: `
     @if (loading()) {
       <section class="spinner-container">
@@ -41,7 +42,20 @@ import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfac
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let user">
-            <button mat-mini-fab class="delete-button" (click)="delete.emit(user.id)">
+            <button
+              mat-mini-fab class="action-button"
+              (click)="resetPassword.emit(user.id)"
+              matTooltip="Reset password"
+              matTooltipPosition="above"
+            >
+              <mat-icon>lock_reset</mat-icon>
+            </button>
+            <button
+              mat-mini-fab class="delete-button action-button"
+              (click)="deleteUser.emit(user.id)"
+              matTooltip="Delete user"
+              matTooltipPosition="above"
+            >
               <mat-icon>delete</mat-icon>
             </button>
           </td>
@@ -79,12 +93,17 @@ import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfac
       }
 
       .mat-column-actions {
-        width: 70px;
+        width: 140px;
+        text-align: center;
       }
 
       .delete-button {
         background-color: var(--mat-sys-error);
         color: var(--mat-sys-on-error);
+      }
+
+      .action-button {
+        margin: 0 5px;
       }
     `,
   ],
@@ -93,7 +112,8 @@ export class UserTableComponent {
   users = input.required<User[]>();
   loading = input.required<boolean>();
   pagination = input.required<Pagination>();
-  delete = output<string>();
+  deleteUser = output<string>();
+  resetPassword = output<string>();
   pageChange = output<PartialPaginationWithoutTotal>();
 
   displayedColumns = ['id', 'username', 'enabled', 'actions'];

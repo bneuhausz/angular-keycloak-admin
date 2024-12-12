@@ -3,10 +3,11 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { KeycloakService } from "keycloak-angular";
 import { catchError, combineLatest, debounceTime, distinctUntilChanged, EMPTY, from, startWith, Subject, switchMap, tap } from "rxjs";
-import { CreateUser, User } from "../interfaces/user";
+import { CreateUser, ResetUserPassword, User } from "../interfaces/user";
 import { environment } from "../../../environments/environment.development";
 import { Pagination, PartialPaginationWithoutTotal } from "../../shared/interfaces/pagination";
 import { FormControl } from "@angular/forms";
+import { createCredential } from "../interfaces/credential";
 
 interface UserManagementState {
   users: User[];
@@ -165,6 +166,31 @@ export class UserManagementService {
         }),
       );
 
+    resetPassword$ = new Subject<ResetUserPassword>();
+    private readonly passwordReset$ = this.resetPassword$
+      .pipe(
+        takeUntilDestroyed(),
+        tap(() => {
+          this.#state.update((state) => ({
+            ...state,
+            loading: true,
+          }));
+        }),
+        switchMap((user) =>
+          from(this.keycloakService.getToken()).pipe(
+            switchMap((token) => this.resetPassword(token, user)),
+          )
+        ),
+        catchError((error) => {
+          this.#state.update((state) => ({
+            ...state,
+            error: error.message,
+            loading: false,
+          }));
+          return EMPTY;
+        }),
+      );
+
     constructor() {
       this.paginated$.subscribe();
 
@@ -173,6 +199,13 @@ export class UserManagementService {
       this.userCreated$.subscribe();
 
       this.userDeleted$.subscribe();
+
+      this.passwordReset$.subscribe(() => {
+        this.#state.update((state) => ({
+          ...state,
+          loading: false,
+        }));
+      });
     }
 
   private getUsers(token: string) {
@@ -203,6 +236,16 @@ export class UserManagementService {
     const filter = this.#state().filter;
     return this.http.get<number>(
       `${environment.keycloakConfig.userManagementBaseUrl}/count?username=${filter}`,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+    );
+  }
+
+  private resetPassword(token: string, user: ResetUserPassword) {
+    return this.http.put(
+      `${environment.keycloakConfig.userManagementBaseUrl}/${user.id}/reset-password`,
+      {
+        ...createCredential({ value: user.data.value }),
+      },
       { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
     );
   }

@@ -5,23 +5,28 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: "app-user-table-toolbar",
-  imports: [MatIconModule, MatButtonModule, MatToolbarModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [MatIconModule, MatButtonModule, MatToolbarModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatTooltipModule],
   template: `
     <mat-toolbar>
       <mat-form-field id="username-filter">
         <input
           matInput
-          placeholder="Username"
+          placeholder="Filter username"
           type="text"
           [formControl]="filterControl()"
         />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
       <span class="spacer"></span>
-      <button mat-icon-button (click)="create.emit()">
+      <button mat-icon-button 
+        (click)="create.emit()"
+        matTooltip="Create user"
+        matTooltipPosition="above"
+      >
         <mat-icon>add</mat-icon>
       </button>
     </mat-toolbar>

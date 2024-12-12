@@ -5,6 +5,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { FormBuilder, Validators } from "@angular/forms";
 
 @Component({
+  host: { 'data-dialog': 'create-user' },
   imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatButtonModule, CreateUserFormComponent],
   template: `
     <h2 mat-dialog-title align="center">Create User</h2>

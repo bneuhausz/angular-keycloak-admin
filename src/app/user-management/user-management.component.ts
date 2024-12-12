@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CreateUserDialogComponent } from './ui/create-user-dialog.component';
 import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ResetPasswordDialogComponent } from './ui/reset-password-dialog.component';
 
 @Component({
   imports: [UserTableComponent, MatCardModule, UserTableToolbarComponent],
@@ -24,7 +25,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           [loading]="userManagementService.loading()"
           [pagination]="userManagementService.pagination()"
           (pageChange)="userManagementService.pagination$.next($event)"
-          (delete)="deleteUser($event)"
+          (resetPassword)="openResetPasswordDialog($event)"
+          (deleteUser)="deleteUser($event)"
         />
       </mat-card>
     </main>
@@ -38,7 +40,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       mat-card {
-        width: 800px;
+        width: 1000px;
         margin: 20px 10px;
         padding: 20px 0;
       }
@@ -57,6 +59,22 @@ export default class UserManagementComponent {
         this.userManagementService.createUser$.next(result);
       }      
     });
+  }
+
+  openResetPasswordDialog(id: string) {
+    const user = this.userManagementService.users().find(user => user.id === id);
+
+    if (user) {
+      const dialogRef = this.dialog.open(ResetPasswordDialogComponent, {
+        data: user,
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.userManagementService.resetPassword$.next({ id, data: { value: result.password } });
+        }      
+      });
+    }
+    
   }
 
   deleteUser(id: string) {
