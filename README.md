@@ -7,3 +7,4 @@ Docker-compose file with Keycloak and Postgres for local development included, b
 
 While the docker-compose file is included, the volumes are not.
 If you want to try the application, create a user-manager realm role and assign it the necessary claims to manage users and roles.
+You'll also need to create myrealm and myclient.
