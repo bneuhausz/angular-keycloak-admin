@@ -114,99 +114,99 @@ export class UserManagementService {
       }),
     );
 
-    createUser$ = new Subject<CreateUser>();
-    private readonly userCreated$ = this.createUser$
-      .pipe(
-        takeUntilDestroyed(),
-        tap(() => {
-          this.#state.update((state) => ({
-            ...state,
-            loading: true,
-          }));
-        }),
-        switchMap((user) =>
-          from(this.keycloakService.getToken()).pipe(
-            switchMap((token) => this.createUser(token, user)),
-            switchMap(() => this.loadUsers$),
-          )
-        ),
-        catchError((error) => {
-          this.#state.update((state) => ({
-            ...state,
-            error: error.message,
-            loading: false,
-          }));
-          return EMPTY;
-        }),
-      );
-
-    deleteUser$ = new Subject<string>();
-    private readonly userDeleted$ = this.deleteUser$
-      .pipe(
-        takeUntilDestroyed(),
-        tap(() => {
-          this.#state.update((state) => ({
-            ...state,
-            loading: true,
-          }));
-        }),
-        switchMap((userId) =>
-          from(this.keycloakService.getToken()).pipe(
-            switchMap((token) => this.deleteUser(token, userId)),
-            switchMap(() => this.loadUsers$),
-          )
-        ),
-        catchError((error) => {
-          this.#state.update((state) => ({
-            ...state,
-            error: error.message,
-            loading: false,
-          }));
-          return EMPTY;
-        }),
-      );
-
-    resetPassword$ = new Subject<ResetUserPassword>();
-    private readonly passwordReset$ = this.resetPassword$
-      .pipe(
-        takeUntilDestroyed(),
-        tap(() => {
-          this.#state.update((state) => ({
-            ...state,
-            loading: true,
-          }));
-        }),
-        switchMap((user) =>
-          from(this.keycloakService.getToken()).pipe(
-            switchMap((token) => this.resetPassword(token, user)),
-          )
-        ),
-        catchError((error) => {
-          this.#state.update((state) => ({
-            ...state,
-            error: error.message,
-            loading: false,
-          }));
-          return EMPTY;
-        }),
-      );
-
-    constructor() {
-      this.paginated$.subscribe();
-
-      this.filterChanged$.subscribe();
-
-      this.userCreated$.subscribe();
-
-      this.userDeleted$.subscribe();
-
-      this.passwordReset$.subscribe(() => {
+  createUser$ = new Subject<CreateUser>();
+  private readonly userCreated$ = this.createUser$
+    .pipe(
+      takeUntilDestroyed(),
+      tap(() => {
         this.#state.update((state) => ({
           ...state,
+          loading: true,
+        }));
+      }),
+      switchMap((user) =>
+        from(this.keycloakService.getToken()).pipe(
+          switchMap((token) => this.createUser(token, user)),
+          switchMap(() => this.loadUsers$),
+        )
+      ),
+      catchError((error) => {
+        this.#state.update((state) => ({
+          ...state,
+          error: error.message,
           loading: false,
         }));
-      });
-    }
+        return EMPTY;
+      }),
+    );
+
+  deleteUser$ = new Subject<string>();
+  private readonly userDeleted$ = this.deleteUser$
+    .pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.#state.update((state) => ({
+          ...state,
+          loading: true,
+        }));
+      }),
+      switchMap((userId) =>
+        from(this.keycloakService.getToken()).pipe(
+          switchMap((token) => this.deleteUser(token, userId)),
+          switchMap(() => this.loadUsers$),
+        )
+      ),
+      catchError((error) => {
+        this.#state.update((state) => ({
+          ...state,
+          error: error.message,
+          loading: false,
+        }));
+        return EMPTY;
+      }),
+    );
+
+  resetPassword$ = new Subject<ResetUserPassword>();
+  private readonly passwordReset$ = this.resetPassword$
+    .pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.#state.update((state) => ({
+          ...state,
+          loading: true,
+        }));
+      }),
+      switchMap((user) =>
+        from(this.keycloakService.getToken()).pipe(
+          switchMap((token) => this.resetPassword(token, user)),
+        )
+      ),
+      catchError((error) => {
+        this.#state.update((state) => ({
+          ...state,
+          error: error.message,
+          loading: false,
+        }));
+        return EMPTY;
+      }),
+    );
+
+  constructor() {
+    this.paginated$.subscribe();
+
+    this.filterChanged$.subscribe();
+
+    this.userCreated$.subscribe();
+
+    this.userDeleted$.subscribe();
+
+    this.passwordReset$.subscribe(() => {
+      this.#state.update((state) => ({
+        ...state,
+        loading: false,
+      }));
+    });
+  }
 
   private getUsers(token: string) {
     const first = (this.pagination().pageIndex) * this.pagination().pageSize;
